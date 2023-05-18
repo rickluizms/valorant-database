@@ -81,27 +81,34 @@ class Valorant():
         
         # Get content
         print("Get Content")
-        url = getUrl.get.statsUrl(region)
-        driver.get(url)
-        time.sleep(1)
 
-        element = driver.find_element("xpath", "//div[@class='wf-card mod-table mod-dark']//table[@class='wf-table mod-stats mod-scroll']")
-        html_content = element.get_attribute('outerHTML')
+        region_data = []
 
-        # Parser HTML content
-        soup = BeautifulSoup(html_content, 'html.parser')
-        table = soup.find(name='table')
+        regions = region
+        for region in regions:
+            url = getUrl.get.statsUrl(region)
+            driver.get(url)
+            time.sleep(1)
 
-        # Make a dataframe
-        df_full = pd.read_html(str(table))[0]
+            element = driver.find_element("xpath", "//div[@class='wf-card mod-table mod-dark']//table[@class='wf-table mod-stats mod-scroll']")
+            html_content = element.get_attribute('outerHTML')
+
+            # Parser HTML content
+            soup = BeautifulSoup(html_content, 'html.parser')
+            table = soup.find(name='table')
+
+            # Make a dataframe
+            df_full = pd.read_html(str(table))[0]
+            region_data.append(df_full)
+
+        df_full = pd.DataFrame(region_data)
         df = df_full[['Player', 'Agents', 'Rnd', 'R',  'ACS', 'K:D', 'KAST', 'ADR', 'KPR', 'APR', 'FKPR', 'FDPR', 'HS%', 'CL%', 'CL', 'KMax', 'K', 'D', 'A', 'FK', 'FD']]
         column_name = Table.columns("stats")
         df.columns = column_name
         df1 = df.fillna(0)
         print(df1)
-        
-        db.save_dataframe(connection, df1, table_name=Table.name("stats"))
-        return
+
+        return df1
     
     def get_matches(driver, region, connection):
         # Get content

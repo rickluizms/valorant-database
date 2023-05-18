@@ -1,6 +1,8 @@
 from ..core.scrapping import Valorant as Vlr
 import mysql.connector
+from ..core.save_db import update_dataframe
 from ..core.save_db import close_connection
+from ..models.tables import Table
 
 class Controller():
     def __init__(self):
@@ -14,9 +16,12 @@ class Controller():
 
         #Vlr.get_matches(driver, region, connection)
 
-        for i in region:
+        
 
-            Vlr.get_stats(driver, i, connection)
+        df1 = Vlr.get_stats(driver, region, connection)
+        print(df1)
+
+        update_dataframe(connection, df1, table_name=Table.name("stats"))
 
         #Vlr.get_agents(driver, region, connection)
 

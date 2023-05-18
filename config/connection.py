@@ -3,7 +3,7 @@ import mysql.connector
 # Configuração da conexão
 mydb = {
     'user': 'root',
-    'password': '',
+    'password': 'Lz.157675',
     'host': 'localhost',
     'database': 'valorant_dba',
     'raise_on_warnings': True
@@ -11,7 +11,7 @@ mydb = {
 
 mydb2 = {
     'user': 'root',
-    'password': '',
+    'password': 'Lz.157675',
     'host': 'localhost',
     'database': 'world_stats',
     'raise_on_warnings': True
