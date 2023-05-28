@@ -25,8 +25,30 @@ class Valorant():
         
         return driver 
     
+    def playoffs():
+        return
+    
+    def regular_season():
+        return
+    
+    def team_players():
+        return
+    
     def get_overview(driver, regions, connection):
         #OVERVIEW tem 3 elementos, Playoffs, regular season, e nome dos players.
+        playoffs = False
+        regular_season = False
+        team_players = False
+
+        if playoffs:
+            Valorant.playoffs()
+        
+        if regular_season:
+            Valorant.regular_season()
+        
+        if team_players:
+            Valorant.team_players()
+
         #No decorrer do campeonato a pagina se modifica
         #ELEMENT01
         # Get content
