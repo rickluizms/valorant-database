@@ -4,19 +4,19 @@ class Table():
     def name(name):
         
         if name == "overview-01":
-            table_name = ("tbl_teams_score")
+            table_name = ("teams_score")
 
         elif name == "overview-02":
-            table_name = ("tbl_teams_cast")
+            table_name = ("teams_cast")
 
         elif name == "matches":
-            table_name = ("tbl_matches")
+            table_name = ("matches")
 
         elif name == "stats":
-            table_name = ("tbl_players_stats")
+            table_name = ("players_stats")
 
         elif name == "agents":
-            table_name = ("tbl_agents")
+            table_name = ("agents")
 
         else:
             print("Parametro Inválido!")
@@ -32,7 +32,7 @@ class Table():
             column_name = ['ranking', 'team']
 
         elif name == "matches":
-            column_name = ['ranking', 'results']
+            column_name = ['match', 'results']
 
         elif name == "stats":
             column_name = ['player', 'agents', 'rounds', 'rating', 'ACS', 'KD', 'KAST', 'ADR', 'KPR', 'APR', 

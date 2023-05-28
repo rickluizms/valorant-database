@@ -6,7 +6,7 @@ import pandas as pd
 import time
 from ..models import getUrl
 from ..models.tables import Table
-from ..core import save_db as db
+from ..core.save_db import Database as db
 class Valorant():
 
     def __init__(self):
@@ -25,66 +25,70 @@ class Valorant():
         
         return driver 
     
-    def get_overview(driver, region, connection):
+    def get_overview(driver, regions, connection):
+        #OVERVIEW tem 3 elementos, Playoffs, regular season, e nome dos players.
+        #No decorrer do campeonato a pagina se modifica
         #ELEMENT01
         # Get content
-        print("Get Overview")
-        url = getUrl.get.overviewUrl(region)
-        driver.get(url)
-        time.sleep(1)
+
+        for region in regions:
+            print("Get Overview")
+            url = getUrl.get.overviewUrl(region)
+            driver.get(url)
+            
+            time.sleep(1)
+            
+            element = driver.find_element("xpath", "//div[@class='event-group mod-fullwidth']//table[@class='wf-table mod-simple mod-group']")
+            html_content = element.get_attribute('outerHTML')
+
+            # Parser HTML content
+            soup = BeautifulSoup(html_content, 'html.parser')
+            table = soup.find(name='table')
+
+            # Make a dataframe
+            df_full = pd.read_html(str(table))[0]
+            df = df_full[['Unnamed: 0', 'W', 'L', 'T', 'MAP', 'RND', 'Δ']]
+            column_name = Table.columns("overview-01")
+            df.columns = column_name
+            print(df)
+
+            #Mudar nome da tabela com regiao antes
+            sql_table=Table.name("overview-01")
+            table_name = f'{region}_{sql_table}'
+            db.inject(connection, df, table_name)
         
-        element = driver.find_element("xpath", "//div[@class='event-group mod-fullwidth']//table[@class='wf-table mod-simple mod-group']")
-        html_content = element.get_attribute('outerHTML')
-
-        # Parser HTML content
-        soup = BeautifulSoup(html_content, 'html.parser')
-        table = soup.find(name='table')
-
-        # Make a dataframe
-        df_full = pd.read_html(str(table))[0]
-        df = df_full[['Unnamed: 0', 'W', 'L', 'T', 'MAP', 'RND', 'Δ']]
-        column_name = Table.columns("overview-01")
-        df.columns = column_name
-        print(df)
-
-        db.save_dataframe(connection, df, table_name=Table.name("overview-01"))
         
+            #ELEMENT2 - GET PLAYERS
 
-        #ELEMENT2 - GET PLAYERS
+            element2 = driver.find_element("xpath", "//div[@class='event-teams-container']")
+            html_content2 = element2.get_attribute('outerHTML')
 
-
-        element2 = driver.find_element("xpath", "//div[@class='event-teams-container']")
-        html_content2 = element2.get_attribute('outerHTML')
-
-        # Parser HTML content
-        soup2 = BeautifulSoup(html_content2, 'html.parser')
+            # Parser HTML content
+            soup2 = BeautifulSoup(html_content2, 'html.parser')
 
 
-        atributes = {'class': 'wf-card event-team'}
-        respostas2 = soup2.find_all("div", attrs=atributes)
+            atributes = {'class': 'wf-card event-team'}
+            respostas2 = soup2.find_all("div", attrs=atributes)
 
-        teams2 = {}
+            teams2 = {}
 
-        for i in range(0, 10):
-            resposta2 = respostas2[i].get_text(" ", strip = True)
-            teams2[i] = resposta2
+            for i in range(0, 10):
+                resposta2 = respostas2[i].get_text(" ", strip = True)
+                teams2[i] = resposta2
 
-        df = pd.DataFrame(list(teams2.items()))
-        column_name = Table.columns("overview-02")
-        df.columns = column_name
-        print(df)
-        db.save_dataframe(connection, df, table_name=Table.name("overview-02"))
+            df = pd.DataFrame(list(teams2.items()))
+            column_name = Table.columns("overview-02")
+            df.columns = column_name
+            print(df)
+
+            sql_table=Table.name("overview-02")
+            table_name = f'{region}_{sql_table}'
+            db.inject(connection, df, table_name)
 
         return
     
-    def get_stats(driver, region, connection):
-        
-        # Get content
-        print("Get Content")
+    def get_stats(driver, regions, connection):
 
-        region_data = []
-
-        regions = region
         for region in regions:
             url = getUrl.get.statsUrl(region)
             driver.get(url)
@@ -99,77 +103,94 @@ class Valorant():
 
             # Make a dataframe
             df_full = pd.read_html(str(table))[0]
-            region_data.append(df_full)
+            
+            df = df_full[['Player', 'Agents', 'Rnd', 'R',  'ACS', 'K:D', 'KAST', 'ADR', 'KPR', 'APR', 'FKPR', 'FDPR', 'HS%', 'CL%', 'CL', 'KMax', 'K', 'D', 'A', 'FK', 'FD']]
+            column_name = Table.columns("stats")
+            df.columns = column_name
+            df1 = df.fillna('no data')
+            print(df1)
 
-        df_full = pd.DataFrame(region_data)
-        df = df_full[['Player', 'Agents', 'Rnd', 'R',  'ACS', 'K:D', 'KAST', 'ADR', 'KPR', 'APR', 'FKPR', 'FDPR', 'HS%', 'CL%', 'CL', 'KMax', 'K', 'D', 'A', 'FK', 'FD']]
-        column_name = Table.columns("stats")
-        df.columns = column_name
-        df1 = df.fillna(0)
-        print(df1)
+            sql_table=Table.name("stats")
+            table_name = f'{region}_{sql_table}'
+            db.inject(df1, connection, table_name)
 
         return df1
     
-    def get_matches(driver, region, connection):
-        # Get content
-        print("Get matches")
-        url = getUrl.get.matchesUrl(region)
-        driver.get(url)
-        time.sleep(1)
+    def get_matches(driver, regions, connection):
 
-        element = driver.find_element("css selector", ".col")
-        html_content = element.get_attribute('outerHTML')
+        for region in regions:
+           
+            # Get content
+            print("Get matches")
+            url = getUrl.get.matchesUrl(region)
+            driver.get(url)
+            time.sleep(1)
 
-        # Parser HTML content
-        soup = BeautifulSoup(html_content, 'html.parser')
+            element = driver.find_element("css selector", ".col")
+            html_content = element.get_attribute('outerHTML')
+
+            # Parser HTML content
+            soup = BeautifulSoup(html_content, 'html.parser')
 
 
-        atributes = {'class': 'match-item-vs'}
-        respostas = soup.find_all("div", attrs=atributes)
+            atributes = {'class': 'match-item-vs'}
+            respostas = soup.find_all("div", attrs=atributes)
 
-        matches = {}
+            matches = {}
 
-        if region == "emea":
-            num = 45
-        else:
-            num = 55
+            if region == "emea":
+                num = 55
+            elif region =="americas":
+                num = 55
+            elif region == "pacific":
+                num = 56
+            else:
+                print('Regiao invalida')
 
-        for i in range(0, num):
-            resposta = respostas[i].get_text(" ", strip = True)
-            matches[i] = (f'{resposta}')
 
-        df = pd.DataFrame(list(matches.items()))
-        column_name = Table.columns("matches")
-        df.columns = column_name
-        print(df)
-        db.save_dataframe(connection, df, table_name=Table.name("matches"))
+            for i in range(0, num):
+                resposta = respostas[i].get_text(",", strip = True)
+                matches[i] = (f'{resposta}')
+
+            df = pd.DataFrame(list(matches.items()))
+            column_name = Table.columns("matches")
+            df.columns = column_name
+            print(df)
+
+            sql_table=Table.name("matches")
+            table_name = f'{region}_{sql_table}'
+            db.inject(df, connection, table_name)
         return
     
-    def get_agents(driver, region, connection):
-        # Get content
-        print("Get agents")
-        url = getUrl.get.agentsUrl(region)
-        driver.get(url)
-        time.sleep(1)
+    def get_agents(driver, regions, connection):
 
-        element = driver.find_element("css selector", ".mod-pr-global")
-        html_content = element.get_attribute('outerHTML')
+        for region in regions:
+            # Get content
+            print("Get agents")
+            url = getUrl.get.agentsUrl(region)
+            driver.get(url)
+            time.sleep(1)
 
-        # Parser HTML content
-        soup = BeautifulSoup(html_content, 'html.parser')
-        table = soup.find(name='table')
+            element = driver.find_element("css selector", ".mod-pr-global")
+            html_content = element.get_attribute('outerHTML')
 
-        # Make a dataframe
-        df_full = pd.read_html(str(table))[0]
-        df = df_full[['Map', '#', 'ATK WIN', 'DEF WIN', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 
-                           'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13','Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18', 'Unnamed: 19',
-                           'Unnamed: 20', 'Unnamed: 21', 'Unnamed: 22']]
-        column_name = Table.columns("agents")
-        df.columns = column_name
-        df1 = df.dropna()
-        print(df1)
+            # Parser HTML content
+            soup = BeautifulSoup(html_content, 'html.parser')
+            table = soup.find(name='table')
+
+            # Make a dataframe
+            df_full = pd.read_html(str(table))[0]
+            df = df_full[['Map', '#', 'ATK WIN', 'DEF WIN', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 
+                            'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13','Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18', 'Unnamed: 19',
+                            'Unnamed: 20', 'Unnamed: 21', 'Unnamed: 22']]
+            column_name = Table.columns("agents")
+            df.columns = column_name
+            df1 = df.dropna()
+            print(df1)
         
-        db.save_dataframe(connection, df1, table_name=Table.name("agents"))
+            sql_table=Table.name("agents")
+            table_name = f'{region}_{sql_table}'
+            db.inject(df1, connection, table_name)
         return
     
 

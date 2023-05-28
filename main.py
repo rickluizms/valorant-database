@@ -1,8 +1,9 @@
 import mysql.connector
-from config.connection import connection2
+from config.connection import SQL
+
 from app.controller.sql_controller import Controller
 
 regions = ['americas', 'emea', 'pacific']
 
 
-Controller.getRegion(region=regions, connection=connection2)
+Controller.getRegion(region=regions, connection=SQL)

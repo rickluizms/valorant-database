@@ -7,10 +7,17 @@ class get():
         self.matchesUrl
         self.agentsUrl      
 
+    #Pagina Com todos os eventos
+    def events():
+
+        driverUrl = ("https://www.vlr.gg/vct-2023")
+
+        return driverUrl
+    
     #Pagina "Home"
     def driver():
 
-        driverUrl = (f"https://www.vlr.gg/event/1189/champions-tour-2023-americas-league")
+        driverUrl = ("https://www.vlr.gg/event/1189/champions-tour-2023-americas-league")
 
         return driverUrl
     
