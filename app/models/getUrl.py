@@ -7,22 +7,15 @@ class get():
         self.matchesUrl
         self.agentsUrl      
 
-    #Pagina Com todos os eventos
-    def events():
+    #Pagina "Home"
+    def driver():
 
         driverUrl = ("https://www.vlr.gg/vct-2023")
 
         return driverUrl
     
-    #Pagina "Home"
-    def driver():
-
-        driverUrl = ("https://www.vlr.gg/event/1189/champions-tour-2023-americas-league")
-
-        return driverUrl
-    
-    #Overview
-    def overviewUrl(region):
+    #Playoffs
+    def playoffs_url(region):
         
         if region == "americas":
             overviewUrl = (f"https://www.vlr.gg/event/1189/champions-tour-2023-{region}-league")
@@ -33,6 +26,61 @@ class get():
         elif region == "pacific":
             overviewUrl = (f"https://www.vlr.gg/event/1191/champions-tour-2023-{region}-league")
         
+        else:
+            print("REGIAO ERRADA")
+            overviewUrl = ""
+
+        return overviewUrl
+    
+    #Regular Season
+    def regular_season_url(region, event_stage):
+        
+        if region == "americas":
+            overviewUrl = (f"https://www.vlr.gg/event/1190/champions-tour-2023-{region}-league/{event_stage}")
+
+        elif region == "emea":
+            overviewUrl = (f"https://www.vlr.gg/event/1190/champions-tour-2023-{region}-league/{event_stage}")
+
+        elif region == "pacific":
+            overviewUrl = (f"https://www.vlr.gg/event/1190/champions-tour-2023-{region}-league/{event_stage}")
+        
+        else:
+            print("REGIAO ERRADA")
+            overviewUrl = ""
+
+        return overviewUrl
+    
+    #Roaster
+    def roasterUrl(region):
+        
+        if region == "americas":
+            overviewUrl = (f"https://www.vlr.gg/event/1189/champions-tour-2023-{region}-league")
+
+        elif region == "emea":
+            overviewUrl = (f"https://www.vlr.gg/event/1190/champions-tour-2023-{region}-league")
+
+        elif region == "pacific":
+            overviewUrl = (f"https://www.vlr.gg/event/1191/champions-tour-2023-{region}-league")
+        
+        else:
+            print("REGIAO ERRADA")
+            overviewUrl = ""
+
+        return overviewUrl
+   
+    #Overview
+    def overviewUrl(region, event_stage):
+        
+        if region == "americas":
+            overviewUrl = (f"https://www.vlr.gg/event/1189/champions-tour-2023-{region}-league/{event_stage}")
+
+        elif region == "emea":
+            overviewUrl = (f"https://www.vlr.gg/event/1190/champions-tour-2023-{region}-league/{event_stage}")
+
+        elif region == "pacific":
+            event_stage = 'league-play'
+            overviewUrl = (f"https://www.vlr.gg/event/1191/champions-tour-2023-{region}-league/{event_stage}")
+
         else:
             print("REGIAO ERRADA")
             overviewUrl = ""

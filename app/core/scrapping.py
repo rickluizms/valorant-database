@@ -21,41 +21,28 @@ class Valorant():
     def init_bot():  
 
         options = webdriver.ChromeOptions()
+        options.add_argument('--headless')  # Adicione essa linha para executar o Chrome em modo headless
         driver = webdriver.Chrome(options=options)
         
         return driver 
     
-    def playoffs():
-        return
-    
-    def regular_season():
-        return
-    
-    def team_players():
-        return
-    
-    def get_overview(driver, regions, connection):
-        #OVERVIEW tem 3 elementos, Playoffs, regular season, e nome dos players.
-        playoffs = False
-        regular_season = False
-        team_players = False
-
-        if playoffs:
-            Valorant.playoffs()
-        
-        if regular_season:
-            Valorant.regular_season()
-        
-        if team_players:
-            Valorant.team_players()
-
-        #No decorrer do campeonato a pagina se modifica
-        #ELEMENT01
-        # Get content
-
+    def playoffs(driver, regions, connection, config):
         for region in regions:
             print("Get Overview")
-            url = getUrl.get.overviewUrl(region)
+            url = getUrl.get.overviewUrl(region, event_stage='playoffs')
+            driver.get(url)
+            
+            time.sleep(1)
+
+        df = ""
+        return df
+    
+    def regular_season(driver, regions, connection, config):
+        print(regions)
+        for region in regions:
+            print(region)
+            print("Get Overview")
+            url = getUrl.get.overviewUrl(region, event_stage='regular-season')
             driver.get(url)
             
             time.sleep(1)
@@ -77,7 +64,7 @@ class Valorant():
             #Mudar nome da tabela com regiao antes
             sql_table=Table.name("overview-01")
             table_name = f'{region}_{sql_table}'
-            db.inject(connection, df, table_name)
+            db.inject(df, connection, table_name)
         
         
             #ELEMENT2 - GET PLAYERS
@@ -95,19 +82,33 @@ class Valorant():
             teams2 = {}
 
             for i in range(0, 10):
-                resposta2 = respostas2[i].get_text(" ", strip = True)
+                resposta2 = respostas2[i].get_text(",", strip = True)
                 teams2[i] = resposta2
 
             df = pd.DataFrame(list(teams2.items()))
             column_name = Table.columns("overview-02")
             df.columns = column_name
+            df['team']
             print(df)
 
             sql_table=Table.name("overview-02")
             table_name = f'{region}_{sql_table}'
-            db.inject(connection, df, table_name)
+            db.inject(df, connection, table_name)
+        
+    
+    def get_overview(driver, regions, connection, config):
+        #OVERVIEW tem 3 elementos, Playoffs, regular season, e nome dos players.
+        playoffs = config.playoffs
+        regular_season = config.regular_season
+        team_players = config.team_players
 
-        return
+        if playoffs:
+            Valorant.playoffs(driver, regions, connection, config)
+        
+        if regular_season:
+            Valorant.regular_season(driver, regions, connection, config)
+    
+
     
     def get_stats(driver, regions, connection):
 
@@ -177,6 +178,8 @@ class Valorant():
             df = pd.DataFrame(list(matches.items()))
             column_name = Table.columns("matches")
             df.columns = column_name
+
+            df['results']
             print(df)
 
             sql_table=Table.name("matches")
